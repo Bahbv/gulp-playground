@@ -7,6 +7,7 @@ const gulp = require("gulp"),
   babel = require("gulp-babel"),
   concat = require("gulp-concat");
 
+  /* Paths to be used */
 const paths = {
   styles: {
     src: ["./src/scss/main.scss"],
@@ -19,12 +20,12 @@ const paths = {
     dest: "./dist/js/"
   },
   html: {
-    src: "./index.html"
+    src: ["./index.html"],
   }
 };
 
-/* STYLES */
-function doStyles(done) {
+/* Process the styles */
+function processStyles(done) {
   return gulp.series(style, done => {
     done();
   })(done);
@@ -35,14 +36,13 @@ function style() {
     .src(paths.styles.src)
     .pipe(sass())
     .on("error", sass.logError)
-    .pipe(postcss([autoprefixer()]))
+    .pipe(postcss([autoprefixer()])) 
     .pipe(gulp.dest(paths.styles.dest))
     .pipe(browserSync.stream());
 }
-/* END STYLES */
 
-/* SCRIPTS */
-function doScripts(done) {
+/* Process the scripts */
+function processScripts(done) {
   return gulp.series(
     preprocessJs,
     concatJs,
@@ -76,9 +76,7 @@ function concatJs() {
 }
 
 
-/* END SCRIPTS */
-
-/* WATCH */
+/* Tasks and browserSync */
 function reload(done) {
   browserSync.reload();
   done();
@@ -87,14 +85,16 @@ function reload(done) {
 function watch() {
   browserSync.init({
     server: {
-        baseDir: "./" /* Of proxy */
+        baseDir: "./" 
+        // if using vhost-based url
+        //proxy: "local.dev"
     }
   });
-  gulp.watch(paths.styles.all, doStyles);
-  gulp.watch(paths.scripts.src, doScripts);
+  gulp.watch(paths.styles.all, processStyles);
+  gulp.watch(paths.scripts.src, processScripts);
   gulp.watch(paths.html.src, reload);
 
 }
-/* END WATCH */
 
+/* Our tasks */
 gulp.task("default", watch);
